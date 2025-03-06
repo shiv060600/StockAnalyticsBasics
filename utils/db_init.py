@@ -1,6 +1,7 @@
 import sqlite3
 import pandas as pd
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 from apis.stock_api import get_stock_data
 from apis.news_api import get_news_data
@@ -23,7 +24,7 @@ def create_tables_if_not_exist(db_name):
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS StockPrices(
-                   datetime TEXT,
+                   date TEXT,
                    ticker TEXT,
                    open REAL,
                    high REAL,
@@ -43,38 +44,18 @@ def create_tables_if_not_exist(db_name):
     )""")
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS InterestRate(
-                date DATA,
+                date TEXT,
                 interestrate REAL
     )""")
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS InflationRate(
+                   date TEXT,
+                   inflation_rate REAL
+    )""")
 
-def insert_stock_data(db_name, stock_data_df):
-    conn = sqlite3.connect(db_name)
-    stock_data_df.to_sql("StocksPrices",conn,if_exists = "append", index = True)
 
-def insert_stocks(db_name, stocks_df):
-    conn = sqlite3.connect(db_name)
-    stocks_df.to_sql("Stocks",conn,if_texts = "append", index = True)
 
-def insert_news(db_name, news_df):
-    conn = sqlite3.connect(db_name)
-    news_df.tosql("News", conn, if_extists = "append", index = True)
 
-def insert_interest_rate(db_name,interest_rate_df):
-    conn = sqlite3.connect(db_name)
-    interest_rate_df.tosql("InterestRate", conn, if_exists = "append", index = True)
-
-def db_load(stock_symbol): 
-    #Load Dfs
-    stock_data_df = get_stock_data(stock_symbol)
-    news_data_df = get_news_data(stock_symbol)
-    interest_rate_df = get_interest_rate_data(stock_symbol)
-    stock_df = get_company_name(stock_symbol)
-
-    #insert data into Sq3liteDb
-    insert_stock_data(DATABASE_NAME,stock_data_df)
-    insert_news(DATABASE_NAME,news_data_df)
-    insert_interest_rate(DATABASE_NAME,interest_rate_df)
-    insert_stocks(DATABASE_NAME,stock_df)
 
 
 

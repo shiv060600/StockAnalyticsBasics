@@ -19,3 +19,4 @@ def get_time():
 
     return res
 
+print(get_time())
