@@ -2,7 +2,7 @@ import sqlite3
 from datetime import datetime
 
 
-def stock_data_db_handler(db_name, stock_data_df, date):
+def stock_data_db_handler(db_name, stock_data_df):
     conn = sqlite3.connect(db_name)
     stock_data_df.to_sql("StocksPrices",conn,if_exists = "append", index = True)
 

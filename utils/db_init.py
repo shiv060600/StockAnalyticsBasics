@@ -3,11 +3,6 @@ import pandas as pd
 import os
 from datetime import datetime
 from dotenv import load_dotenv
-from apis.stock_api import get_stock_data
-from apis.news_api import get_news_data
-from apis.inflation_api import get_inflation_data
-from apis.interest_rate_api import get_interest_rate_data
-from apis.symbol_search import get_company_name
 import sqlitecloud
 load_dotenv
 DB_KEY = os.getenv("DB_KEY")
@@ -52,6 +47,7 @@ def create_tables_if_not_exist(db_name):
                    date TEXT,
                    inflation_rate REAL
     )""")
+create_tables_if_not_exist(DATABASE_NAME)
 
 
 
