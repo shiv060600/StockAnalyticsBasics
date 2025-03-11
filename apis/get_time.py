@@ -18,5 +18,3 @@ def get_time():
     res = date + " " + rounded_time + ":00"
 
     return res
-
-print(get_time())

@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 import streamlit as st
 from streamlit_extras.mandatory_date_range import date_range_picker
 from apis.get_stock_data_range import get_stock_data_range
+import streamlit.components.v1 as components
 import datetime
+import mpld3
 
 DATABASE_NAME = "stock_data.db"
 load_dotenv()
@@ -39,21 +41,26 @@ try:
             st.write("No data fetched from the API.")
     else:
         st.write("Data found in the database.")
-        stock_df = pd.DataFrame(data, columns=['date', 'ticker', 'open', 'high', 'low', 'close', 'volume'])
+        stock_df = pd.DataFrame(data, columns=['date', 'ticker', 'open', 'high', 'low', 'volume', 'close'])
         stock_df['date'] = pd.to_datetime(stock_df['date'])
         stock_df.set_index('date', inplace=True)
+        stock_df['open'] = pd.to_numeric(stock_df['open'])
+        stock_df['close'] = pd.to_numeric(stock_df['close'])
+        stock_df['average_price'] = (stock_df['open'] + stock_df['close']) / 2
+        print(stock_df)
         
     if not stock_df.empty:
         # Calculate average prices
-        stock_df['average_price'] = (stock_df['open'] + stock_df['close']) / 2
+        
         
         # Plotting
-        plt.figure(figsize=(10, 5))
-        plt.plot(stock_df.index, stock_df['average_price'], label='Average Price')
+        stock_plot = plt.figure(figsize=(15, 10))
+        plt.plot(stock_df.index, stock_df['average_price'], label='Average Price' , color = "m")
         plt.xlabel('Date')
         plt.ylabel('Average Price')
         plt.title(f'Average Stock Prices for {ticker} from {start_date} to {end_date}')
         plt.legend()
+        #plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
         st.pyplot(plt)
     else:
         st.write("No data available to plot.")

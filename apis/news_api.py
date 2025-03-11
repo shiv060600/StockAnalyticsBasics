@@ -20,6 +20,7 @@ def get_news_data(stock_Symbol):
                 date_published = datetime.strptime(time_published_str,"%Y%m%dT%H%M%S")
                 summary = article["summary"]
                 banner_image = article["banner_image"]
+                url = article["url"]
                 news_list.append(
                     {
                         "title" : title,
@@ -27,9 +28,13 @@ def get_news_data(stock_Symbol):
                         "sentiment_score" : ticker_sentiment_score,
                         "date_published" : date_published.date,
                         "summary" : summary,
-                        "banner_image" : banner_image
+                        "banner_image" : banner_image,
+                        "url" : url
                     }
                 )
         news_df = pd.DataFrame(news_list)
     return news_df
 
+result = get_news_data("AAPL")
+
+print(result)
