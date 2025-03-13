@@ -78,19 +78,19 @@ def get_stock_data(stockTicker, start, end):
     return get_stock_data_range(stockTicker, start, end)
 
 with st.spinner(f"Loading data for {ticker}..."):
-    """conn = sqlitecloud.connect(DATABASE_NAME)
-    cursor = conn.cursor()"""
+    #conn = sqlitecloud.connect(DATABASE_NAME)
+    #cursor = conn.cursor()
 
     try:
-        """cursor.execute("SELECT * FROM StockPrices WHERE date BETWEEN ? AND ? AND ticker = ?", (start_date, end_date, ticker))
-        data = cursor.fetchall()"""
+        #cursor.execute("SELECT * FROM StockPrices WHERE date BETWEEN ? AND ? AND ticker = ?", (start_date, end_date, ticker))
+        #data = cursor.fetchall()
         
         stock_df = get_stock_data(ticker, start_date, end_date)
             
-        """else:
-            st.info("Data loaded from database")
-            stock_df = pd.DataFrame(data, columns=['date', 'ticker', 'open', 'high', 'low', 'volume', 'close'])
-            stock_df.set_index('date', inplace=True)"""
+        #else:
+            #st.info("Data loaded from database")
+            #stock_df = pd.DataFrame(data, columns=['date', 'ticker', 'open', 'high', 'low', 'volume', 'close'])
+            #stock_df.set_index('date', inplace=True)"""
 
         numeric_columns = ['open', 'high', 'low', 'close', 'volume']
         for col in numeric_columns:
