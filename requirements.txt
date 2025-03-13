@@ -4,6 +4,5 @@ python-dotenv
 matplotlib
 streamlit_extras
 yfinance
-os
 plotly
 sqlitecloud
