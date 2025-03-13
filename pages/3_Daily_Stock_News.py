@@ -1,7 +1,7 @@
 import streamlit as st
 from apis.news_api import get_news_data
 import pandas as pd
-
+import os
 st.set_page_config("Daily Stock News")
 
 st.title("Stock News")

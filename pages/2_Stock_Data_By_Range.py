@@ -8,68 +8,279 @@ from apis.get_stock_data_range import get_stock_data_range
 import streamlit.components.v1 as components
 import datetime
 import mpld3
-
-DATABASE_NAME = "stock_data.db"
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import os 
+import sqlitecloud
 load_dotenv()
+CLOUD_DB = os.getenv("DB_KEY")
+st.set_page_config(page_title="Stock Data By Range", layout="wide")
 
-# Page Configs
-st.set_page_config(page_title="Stock Data By Range")
-st.title("Stock Data By Range")
+#DATABASE_NAME = "stock_data.db"
+DATABASE_NAME = CLOUD_DB
 
-# User Inputs
-ticker = st.text_input("Enter a ticker:", "AAPL")
-date_range = date_range_picker("Choose a date range:", None, None)
-start_date = date_range[0].strftime("%Y-%m-%d")
-end_date = date_range[1].strftime("%Y-%m-%d")
 
-# Define Stock DF function
-@st.cache_data
+st.markdown("""
+<style>
+    .header-container {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .metric-container {
+        background-color: #f0f2f6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+    .plotly-chart {
+        border-radius: 0.5rem;
+        background-color: #f8f9fa;
+        padding: 1rem;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+    .small-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    [data-testid="stMetricValue"] {
+        font-weight: bold;
+        color: #1E88E5;
+    }
+    .header-container h1 {
+        color: #1E88E5;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="header-container">
+    <h1>Stock Data Analysis By Date Range</h1>
+    <p>Analyze historical stock performance over your chosen time period with interactive charts and key metrics.</p>
+</div>
+""", unsafe_allow_html=True)
+
+col1, col2 = st.columns([1, 2])
+with col1:
+    ticker = st.text_input("Enter a ticker:", "AAPL")
+
+with col2:
+    date_range = date_range_picker("Choose a date range:", None, None)
+    start_date = date_range[0].strftime("%Y-%m-%d")
+    end_date = date_range[1].strftime("%Y-%m-%d")
+
+st.markdown("---")
+
+@st.cache_data(ttl=3600)
 def get_stock_data(stockTicker, start, end):
     return get_stock_data_range(stockTicker, start, end)
 
-conn = sqlite3.connect(DATABASE_NAME)
-cursor = conn.cursor()
+with st.spinner(f"Loading data for {ticker}..."):
+    conn = sqlitecloud.connect(DATABASE_NAME)
+    cursor = conn.cursor()
 
-try:
-    cursor.execute("SELECT * FROM StockPrices WHERE date BETWEEN ? AND ? AND ticker = ?", (start_date, end_date, ticker))
-    data = cursor.fetchall()
-    if not data:
-        stock_df = get_stock_data(ticker, start_date, end_date)
-        if not stock_df.empty:
-            stock_df.to_sql("StockPrices", conn, if_exists="append", index=True, index_label='date')
+    try:
+        cursor.execute("SELECT * FROM StockPrices WHERE date BETWEEN ? AND ? AND ticker = ?", (start_date, end_date, ticker))
+        data = cursor.fetchall()
+        if not data:
+            stock_df = get_stock_data(ticker, start_date, end_date)
+            
         else:
-            st.write("No data fetched from the API.")
-    else:
-        st.write("Data found in the database.")
-        stock_df = pd.DataFrame(data, columns=['date', 'ticker', 'open', 'high', 'low', 'volume', 'close'])
-        stock_df['date'] = pd.to_datetime(stock_df['date'])
-        stock_df.set_index('date', inplace=True)
-        stock_df['open'] = pd.to_numeric(stock_df['open'])
-        stock_df['close'] = pd.to_numeric(stock_df['close'])
+            st.info("Data loaded from database")
+            stock_df = pd.DataFrame(data, columns=['date', 'ticker', 'open', 'high', 'low', 'volume', 'close'])
+            stock_df.set_index('date', inplace=True)
+
+        numeric_columns = ['open', 'high', 'low', 'close', 'volume']
+        for col in numeric_columns:
+            stock_df[col] = pd.to_numeric(stock_df[col])
+        
         stock_df['average_price'] = (stock_df['open'] + stock_df['close']) / 2
-        print(stock_df)
+        stock_df['daily_change'] = stock_df['close'] - stock_df['open']
+        stock_df['daily_pct_change'] = (stock_df['close'] - stock_df['open']) / stock_df['open']
+        stock_df['MA20'] = stock_df['close'].rolling(window=20).mean()
+        stock_df['MA50'] = stock_df['close'].rolling(window=50).mean()
+
+        st.markdown("<div class ='metric-container'>", unsafe_allow_html= True)
+
+        metric_col1, metric_col2, metric_col3 = st.columns(3)
+        overall_change = stock_df['close'].iloc[-1] - stock_df['close'].iloc[0]
+        overall_pct_change = (overall_change / stock_df['close'].iloc[0]) * 100
+
+        volatility = stock_df['daily_pct_change'].std()
+        avg_volume = stock_df['volume'].mean() 
+
+        highest_price = stock_df['high'].max()
+        lowest_price = stock_df['low'].min()
+
+        with metric_col1:
+            st.metric(
+                    label="Overall Change",
+                    value=f"${round(overall_change, 2)}",
+                    delta=f"{round(overall_pct_change, 2)}%"
+                )
+                
+        with metric_col2:
+            st.metric(
+                    label="Price Range",
+                    value=f"${round(lowest_price, 2)} - ${round(highest_price, 2)}",
+                    delta=f"Spread: ${round(highest_price - lowest_price, 2)}"
+                )
+                
+        with metric_col3:
+                st.metric(
+                    label="Volatility",
+                    value=f"{round(volatility, 2)}%",
+                    delta=f"Avg Vol: {int(avg_volume):,}"
+                )
+                
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown("<div class='plotly-chart'>", unsafe_allow_html=True)
+
+        fig = go.Figure()
+
+        fig.add_trace(
+            go.Scatter(
+                x=stock_df.index,
+                y=stock_df['close'],
+                mode='lines',
+                name='Price',
+                line=dict(color='#1E88E5', width=2),
+                hovertemplate='Date: %{x}<br>Price: $%{y:.2f}<extra></extra>'
+            )
+        )
+
+        fig.add_trace(
+            go.Scatter(
+                x=stock_df.index,
+                y=stock_df['MA20'],
+                mode='lines',
+                name='20-day MA',
+                line=dict(color='#FF9800', width=1, dash='dot'),
+                hovertemplate='20-day MA: $%{y:.2f}<extra></extra>'
+            )
+        )
+
+        fig.add_trace(
+            go.Scatter(
+                x=stock_df.index,
+                y=stock_df['MA50'],
+                mode='lines',
+                name='50-day MA',
+                line=dict(color='#4CAF50', width=1, dash='dash'),
+                hovertemplate='50-day MA: $%{y:.2f}<extra></extra>'
+            )
+        )
+
+        fig.update_layout(
+            title=f'{ticker} Stock Price ({start_date} to {end_date})',
+            height=500,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
+            margin=dict(l=40, r=40, b=40, t=80),
+            hovermode="x unified",
+            template="plotly_white",
+            xaxis_title="Date",
+            yaxis_title="Price ($)",
+            yaxis=dict(
+                showgrid=True,
+                gridcolor='rgba(230, 230, 230, 0.8)'
+            )
+        )
+
+        fig.update_xaxes(
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=7, label="1w", step="day", stepmode="backward"),
+                    dict(count=1, label="1m", step="month", stepmode="backward"),
+                    dict(count=3, label="3m", step="month", stepmode="backward"),
+                    dict(count=6, label="6m", step="month", stepmode="backward"),
+                    dict(count=1, label="1y", step="year", stepmode="backward"),
+                    dict(step="all")
+                ]),
+                bgcolor="#050505",
+                activecolor="#25d934",
+                x=0.01,
+                y=1.01,
+            ),
+            rangeslider=dict(visible=True, thickness=0.05),
+            type="date"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        with st.expander("Chart Options"):
+            chart_options = st.columns(2)
+            
+            with chart_options[0]:
+                show_daily = st.checkbox("Show Daily Changes", value=False)
+                
+            with chart_options[1]:
+                show_volume = st.checkbox("Show Trading Volume", value=False)
+            
+            if show_daily:
+                daily_fig = go.Figure()
+                daily_fig.add_trace(
+                    go.Bar(
+                        x=stock_df.index,
+                        y=stock_df['daily_pct_change'] * 100,
+                        name="Daily Change %",
+                        marker_color=["#EF5350" if x < 0 else "#26A69A" for x in stock_df['daily_pct_change']],
+                        hovertemplate='Date: %{x}<br>Change: %{y:.2f}%<extra></extra>'
+                    )
+                )
+                daily_fig.update_layout(
+                    title="Daily Price Changes (%)",
+                    height=250,
+                    margin=dict(l=40, r=40, b=20, t=40),
+                    xaxis_rangeslider_visible=False,
+                    yaxis_title="Change (%)"
+                )
+                st.plotly_chart(daily_fig, use_container_width=True)
+                
+            if show_volume:
+                volume_fig = go.Figure()
+                volume_fig.add_trace(
+                    go.Bar(
+                        x=stock_df.index,
+                        y=stock_df['volume'],
+                        name="Volume",
+                        marker_color="rgba(100, 100, 250, 0.5)",
+                        hovertemplate='Date: %{x}<br>Volume: %{y:,}<extra></extra>'
+                    )
+                )
+                volume_fig.update_layout(
+                    title="Trading Volume",
+                    height=250,
+                    margin=dict(l=40, r=40, b=20, t=40),
+                    xaxis_rangeslider_visible=False,
+                    yaxis_title="Volume"
+                )
+                st.plotly_chart(volume_fig, use_container_width=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
         
-    if not stock_df.empty:
-        # Calculate average prices
-        
-        
-        # Plotting
-        stock_plot = plt.figure(figsize=(15, 10))
-        plt.plot(stock_df.index, stock_df['average_price'], label='Average Price' , color = "m")
-        plt.xlabel('Date')
-        plt.ylabel('Average Price')
-        plt.title(f'Average Stock Prices for {ticker} from {start_date} to {end_date}')
-        plt.legend()
-        #plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-        st.pyplot(plt)
-    else:
-        st.write("No data available to plot.")
+        with st.expander("View Data Table"):
+            st.dataframe(
+                stock_df[['open', 'high', 'low', 'close', 'volume', 'daily_pct_change']].style.format({
+                    'open': '${:.2f}',
+                    'high': '${:.2f}',
+                    'low': '${:.2f}',
+                    'close': '${:.2f}',
+                    'volume': '{:,.0f}',
+                    'daily_pct_change': '{:.2f}%'
+                }),
+                height=300
+            )
+                
+    except Exception as e:
+        st.error(f"Error: {e}")
+    finally:
+        conn.close()
 
-except Exception as e:
-    st.write("Error:", e)
-finally:
-    conn.close()
-
-
-
-
+st.markdown("---")
+st.markdown(
+    "<div class='small-text'>Data sourced via Yahoo Finance. Past performance is not indicative of future results.</div>",
+    unsafe_allow_html=True
+)
