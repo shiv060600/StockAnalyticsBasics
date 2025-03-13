@@ -4,8 +4,10 @@ from datetime import datetime
 from dotenv import load_dotenv
 import yfinance
 import os
+import pytz
 load_dotenv()
 ALPHA_ADVANTAGE_API_KEY = os.getenv("ALPHA_ADVANTAGE_API_KEY")
 def get_current_price(stockSymbol):
+    eastern = pytz.timezone('US/Eastern')
     recent_data = yfinance.download(stockSymbol,period = "1d")
-    return (recent_data.loc[datetime.now().date().strftime("%Y-%m-%d")])
+    return (recent_data.loc[datetime.now(eastern).date().strftime("%Y-%m-%d")])
