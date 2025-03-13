@@ -7,7 +7,7 @@ def get_historical_price(ticker, date):
     try:
         date_str = date.strftime('%Y-%m-%d')
         start_date = date - datetime.timedelta(days=10)
-        end_date = date + datetime.timedelta(days=1)
+        end_date = date 
         
         df = yf.download(ticker, start=start_date, end=end_date, progress=False)
         

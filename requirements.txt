@@ -6,3 +6,4 @@ streamlit_extras
 yfinance
 plotly
 sqlitecloud
+mpld3
