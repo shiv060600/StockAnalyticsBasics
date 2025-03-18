@@ -34,7 +34,7 @@ st.markdown("""
 # Simple sidebar
 st.sidebar.title("📈 Stock Parameters")
 ticker = st.sidebar.text_input("Enter Ticker", "AAPL")
-date = st.sidebar.date_input("Select Date (< 3 months prior)")
+date = st.sidebar.date_input("Select Date")
 
 st.title("Daily Stock Dashboard")
 

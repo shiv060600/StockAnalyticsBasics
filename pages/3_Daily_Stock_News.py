@@ -14,19 +14,23 @@ def get_news_df(tickerSymbol):
 
 news_df = get_news_df(ticker)
 
-num_rows = news_df.shape[0]
+if news_df.empty:
+    st.write("No news coming through API. I blame Yahoo!")
 
-for i in range(num_rows):
-    row = news_df.iloc[i]
-    title = row["title"]
-    url = row["url"]
-    summary = row["summary"]
-    banner_image = row["banner_image"]
-    st.image(banner_image, caption=title)
-    st.write(f"**{title}**")
-    st.write(f"Summary: {summary}")
-    st.write(f"[Read more]({url})")
-    st.write("---")
+else:
+    num_rows = news_df.shape[0]
+
+    for i in range(num_rows):
+        row = news_df.iloc[i]
+        title = row["title"]
+        url = row["url"]
+        summary = row["summary"]
+        banner_image = row["banner_image"]
+        st.image(banner_image, caption=title)
+        st.write(f"**{title}**")
+        st.write(f"Summary: {summary}")
+        st.write(f"[Read more]({url})")
+        st.write("---")
 
 
 

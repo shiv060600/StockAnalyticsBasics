@@ -23,13 +23,13 @@ DATABASE_NAME = CLOUD_DB
 st.markdown("""
 <style>
     .header-container {
-        background-color: #f8f9fa;
+        background-color: #141b4a;
         padding: 1.5rem;
         border-radius: 0.5rem;
         margin-bottom: 1rem;
     }
     .metric-container {
-        background-color: #f0f2f6;
+        background-color:#05050;
         padding: 1rem;
         border-radius: 0.5rem;
         margin-bottom: 1rem;
@@ -37,7 +37,7 @@ st.markdown("""
     }
     .plotly-chart {
         border-radius: 0.5rem;
-        background-color: #f8f9fa;
+        background-color: #141b4a;
         padding: 1rem;
         box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
     }
@@ -152,27 +152,6 @@ with st.spinner(f"Loading data for {ticker}..."):
             )
         )
 
-        fig.add_trace(
-            go.Scatter(
-                x=stock_df.index,
-                y=stock_df['MA20'],
-                mode='lines',
-                name='20-day MA',
-                line=dict(color='#FF9800', width=1, dash='dot'),
-                hovertemplate='20-day MA: $%{y:.2f}<extra></extra>'
-            )
-        )
-
-        fig.add_trace(
-            go.Scatter(
-                x=stock_df.index,
-                y=stock_df['MA50'],
-                mode='lines',
-                name='50-day MA',
-                line=dict(color='#4CAF50', width=1, dash='dash'),
-                hovertemplate='50-day MA: $%{y:.2f}<extra></extra>'
-            )
-        )
 
         fig.update_layout(
             title=f'{ticker} Stock Price ({start_date} to {end_date})',
@@ -197,10 +176,10 @@ with st.spinner(f"Loading data for {ticker}..."):
                     dict(count=3, label="3m", step="month", stepmode="backward"),
                     dict(count=6, label="6m", step="month", stepmode="backward"),
                     dict(count=1, label="1y", step="year", stepmode="backward"),
-                    dict(step="all")
+                    dict(step="all", label = "Chosen Range")
                 ]),
                 bgcolor="#050505",
-                activecolor="#25d934",
+                activecolor="#141b4a",
                 x=0.01,
                 y=1.01,
             ),
