@@ -37,7 +37,7 @@ st.markdown("""
     }
     .plotly-chart {
         border-radius: 0.5rem;
-        background-color: #141b4a;
+        /* background-color: #141b4a */;
         padding: 1rem;
         box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
     }
