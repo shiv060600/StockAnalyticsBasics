@@ -13,6 +13,15 @@ def get_current_price(stockSymbol):
     #fallback_data = yfinance.download(stockSymbol,)
     #data = recent_data.loc[datetime.now(eastern).date().strftime("%Y-%m-%d")]
     data = recent_data.tail(1)
-    return data
+    data_dict = {
+        'Close' : data.values[0][0],
+        'High' : data.values[0][1],
+        'Low' : data.values[0][2],
+        'Open' : data.values[0][3],
+        'Volume' : int(data.values[0][4])
+    }
+    return data_dict
+
+
 
 

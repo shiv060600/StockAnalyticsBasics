@@ -6,12 +6,9 @@ import streamlit as st
 from streamlit_extras.mandatory_date_range import date_range_picker
 from apis.get_stock_data_range import get_stock_data_range
 import streamlit.components.v1 as components
-import datetime
-import mpld3
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import os 
-import sqlitecloud
 load_dotenv()
 CLOUD_DB = os.getenv("DB_KEY")
 st.set_page_config(page_title="Stock Data By Range", layout="wide")
@@ -189,54 +186,53 @@ with st.spinner(f"Loading data for {ticker}..."):
 
         st.plotly_chart(fig, use_container_width=True)
 
-        with st.expander("Chart Options"):
-            chart_options = st.columns(2)
+        
+        
+        
+        show_daily = st.checkbox("Show Daily Changes", value=True)
             
-            with chart_options[0]:
-                show_daily = st.checkbox("Show Daily Changes", value=False)
-                
-            with chart_options[1]:
-                show_volume = st.checkbox("Show Trading Volume", value=False)
+        
+        show_volume = st.checkbox("Show Trading Volume", value=True)
+        
+        if show_daily:
+            daily_fig = go.Figure()
+            daily_fig.add_trace(
+                go.Bar(
+                    x=stock_df.index,
+                    y=stock_df['daily_pct_change'] * 100,
+                    name="Daily Change %",
+                    marker_color=["#EF5350" if x < 0 else "#26A69A" for x in stock_df['daily_pct_change']],
+                    hovertemplate='Date: %{x}<br>Change: %{y:.2f}%<extra></extra>'
+                )
+            )
+            daily_fig.update_layout(
+                title="Daily Price Changes (%)",
+                height=250,
+                margin=dict(l=40, r=40, b=20, t=40),
+                xaxis_rangeslider_visible=False,
+                yaxis_title="Change (%)"
+            )
+            st.plotly_chart(daily_fig, use_container_width=True)
             
-            if show_daily:
-                daily_fig = go.Figure()
-                daily_fig.add_trace(
-                    go.Bar(
-                        x=stock_df.index,
-                        y=stock_df['daily_pct_change'] * 100,
-                        name="Daily Change %",
-                        marker_color=["#EF5350" if x < 0 else "#26A69A" for x in stock_df['daily_pct_change']],
-                        hovertemplate='Date: %{x}<br>Change: %{y:.2f}%<extra></extra>'
-                    )
+        if show_volume:
+            volume_fig = go.Figure()
+            volume_fig.add_trace(
+                go.Bar(
+                    x=stock_df.index,
+                    y=stock_df['volume'],
+                    name="Volume",
+                    marker_color="rgba(100, 100, 250, 0.5)",
+                    hovertemplate='Date: %{x}<br>Volume: %{y:,}<extra></extra>'
                 )
-                daily_fig.update_layout(
-                    title="Daily Price Changes (%)",
-                    height=250,
-                    margin=dict(l=40, r=40, b=20, t=40),
-                    xaxis_rangeslider_visible=False,
-                    yaxis_title="Change (%)"
-                )
-                st.plotly_chart(daily_fig, use_container_width=True)
-                
-            if show_volume:
-                volume_fig = go.Figure()
-                volume_fig.add_trace(
-                    go.Bar(
-                        x=stock_df.index,
-                        y=stock_df['volume'],
-                        name="Volume",
-                        marker_color="rgba(100, 100, 250, 0.5)",
-                        hovertemplate='Date: %{x}<br>Volume: %{y:,}<extra></extra>'
-                    )
-                )
-                volume_fig.update_layout(
-                    title="Trading Volume",
-                    height=250,
-                    margin=dict(l=40, r=40, b=20, t=40),
-                    xaxis_rangeslider_visible=False,
-                    yaxis_title="Volume"
-                )
-                st.plotly_chart(volume_fig, use_container_width=True)
+            )
+            volume_fig.update_layout(
+                title="Trading Volume",
+                height=250,
+                margin=dict(l=40, r=40, b=20, t=40),
+                xaxis_rangeslider_visible=False,
+                yaxis_title="Volume"
+            )
+            st.plotly_chart(volume_fig, use_container_width=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
         

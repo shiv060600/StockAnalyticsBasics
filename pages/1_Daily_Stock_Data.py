@@ -11,7 +11,6 @@ st.set_page_config(
     layout="wide",
 )
 
-# Simple CSS - only for the success/error boxes
 st.markdown("""
 <style>
     .success-box {
@@ -31,7 +30,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Simple sidebar
 st.sidebar.title("📈 Stock Parameters")
 ticker = st.sidebar.text_input("Enter Ticker", "AAPL")
 date = st.sidebar.date_input("Select Date")
@@ -48,7 +46,6 @@ with st.spinner("Loading stock data..."):
     except:
         st.subheader(f"{ticker} Stock Data")
     
-    # Market status indicator
     eastern = pytz.timezone('US/Eastern')
     now = datetime.now(eastern)
     market_open = now.replace(hour=9, minute=30, second=0, microsecond=0)
@@ -66,7 +63,6 @@ with st.spinner("Loading stock data..."):
     def get_stock_data(tickerSymbol):
         return get_current_price(tickerSymbol)
 
-    # Current date view
     if date == datetime.now().date():
         stock_row = get_stock_data(ticker)
         st.header("Current Stock Price")
@@ -75,47 +71,41 @@ with st.spinner("Loading stock data..."):
             prev_day = get_historical_price(ticker, (datetime.now() - timedelta(days=1)).date())
             
             if prev_day["Open"] > 0:
-                # Calculate percent changes
-                open_change_pct = ((float(stock_row["Open"].iloc[0]) - float(prev_day["Open"])) / float(prev_day["Open"])) * 100
-                low_change_pct = ((float(stock_row["Low"].iloc[0]) - float(prev_day["Low"])) / float(prev_day["Low"])) * 100
-                high_change_pct = ((float(stock_row["High"].iloc[0]) - float(prev_day["High"])) / float(prev_day["High"])) * 100
-                close_change_pct = ((float(stock_row["Close"].iloc[0]) - float(prev_day["Close"])) / float(prev_day["Close"])) * 100
+                open_change_pct = ((stock_row["Open"] - prev_day["Open"]) / prev_day["Open"]) * 100
+                low_change_pct = ((stock_row["Low"] - prev_day["Low"]) / prev_day["Low"]) * 100
+                high_change_pct = ((stock_row["High"] - prev_day["High"]) / prev_day["High"]) * 100
+                close_change_pct = ((stock_row["Close"] - prev_day["Close"]) / prev_day["Close"]) * 100
                 
-                # Display metrics with percent changes
                 col1, col2, col3, col4, col5 = st.columns(5)
-                col1.metric("Open", f"${round(float(stock_row['Open'].iloc[0]), 2)}",
+                col1.metric("Open", f"${round(stock_row['Open'], 2)}",
                             delta=f"{round(open_change_pct, 2)}%")
-                col2.metric("Low", f"${round(float(stock_row['Low'].iloc[0]), 2)}",
+                col2.metric("Low", f"${round(stock_row['Low'], 2)}",
                             delta=f"{round(low_change_pct, 2)}%")
-                col3.metric("High", f"${round(float(stock_row['High'].iloc[0]), 2)}",
+                col3.metric("High", f"${round(stock_row['High'], 2)}",
                             delta=f"{round(high_change_pct, 2)}%")
-                col4.metric("Close", f"${round(float(stock_row['Close'].iloc[0]), 2)}",
+                col4.metric("Close", f"${round(stock_row['Close'], 2)}",
                             delta=f"{round(close_change_pct, 2)}%")
-                col5.metric("Volume", f"{int(stock_row['Volume'].iloc[0]):,}")
+                col5.metric("Volume", f"{int(stock_row['Volume']):,}")
             else:
                 raise ValueError("Previous day data not available")
         except:
-            # Simple metrics without comparison
             col1, col2, col3, col4, col5 = st.columns(5)
-            col1.metric("Open", f"${round(float(stock_row['Open'].iloc[0]), 2)}")
-            col2.metric("Low", f"${round(float(stock_row['Low'].iloc[0]), 2)}")
-            col3.metric("High", f"${round(float(stock_row['High'].iloc[0]), 2)}")
-            col4.metric("Close", f"${round(float(stock_row['Close'].iloc[0]), 2)}")
-            col5.metric("Volume", f"{int(stock_row['Volume'].iloc[0]):,}")
+            col1.metric("Open", f"${round(stock_row['Open'], 2)}")
+            col2.metric("Low", f"${round(stock_row['Low'], 2)}")
+            col3.metric("High", f"${round(stock_row['High'], 2)}")
+            col4.metric("Close", f"${round(stock_row['Close'], 2)}")
+            col5.metric("Volume", f"{int(stock_row['Volume']):,}")
             
             st.info("Note: Previous day comparison not available")
         
-        # Calculate daily change
-        daily_change = float(stock_row["Close"].iloc[0]) - float(stock_row["Open"].iloc[0])
-        daily_change_pct = (daily_change / float(stock_row["Open"].iloc[0])) * 100
+        daily_change = stock_row["Close"] - stock_row["Open"]
+        daily_change_pct = (daily_change / stock_row["Open"]) * 100
         
-        # Show the daily change in a colored box
         if daily_change > 0:
             st.markdown(f"<div class='success-box'>📈 Today's change: +${round(daily_change, 2)} ({round(daily_change_pct, 2)}%)</div>", unsafe_allow_html=True)
         else:
             st.markdown(f"<div class='error-box'>📉 Today's change: ${round(daily_change, 2)} ({round(daily_change_pct, 2)}%)</div>", unsafe_allow_html=True)
             
-    # Historical date view
     else:
         result = get_historical_price(ticker, date)
         st.header(f"Stock Price on {date.strftime('%A, %B %d, %Y')}")
@@ -125,45 +115,40 @@ with st.spinner("Loading stock data..."):
             prev_day = get_historical_price(ticker, prev_date)
             
             if prev_day["Open"] > 0:
-                # Calculate percent changes
-                open_change_pct = ((float(result["Open"]) - float(prev_day["Open"])) / float(prev_day["Open"])) * 100
-                low_change_pct = ((float(result["Low"]) - float(prev_day["Low"])) / float(prev_day["Low"])) * 100
-                high_change_pct = ((float(result["High"]) - float(prev_day["High"])) / float(prev_day["High"])) * 100
-                close_change_pct = ((float(result["Close"]) - float(prev_day["Close"])) / float(prev_day["Close"])) * 100
+                open_change_pct = ((result["Open"] - prev_day["Open"]) / prev_day["Open"]) * 100
+                low_change_pct = ((result["Low"] - prev_day["Low"]) / prev_day["Low"]) * 100
+                high_change_pct = ((result["High"] - prev_day["High"]) / prev_day["High"]) * 100
+                close_change_pct = ((result["Close"] - prev_day["Close"]) / prev_day["Close"]) * 100
                 
-                # Display metrics 
                 col1, col2, col3, col4, col5 = st.columns(5)
-                col1.metric("Open", f"${round(float(result['Open']), 2)}",
+                col1.metric("Open", f"${round(result['Open'], 2)}",
                             delta=f"{round(open_change_pct, 2)}%")
-                col2.metric("Low", f"${round(float(result['Low']), 2)}",
+                col2.metric("Low", f"${round(result['Low'], 2)}",
                             delta=f"{round(low_change_pct, 2)}%")
-                col3.metric("High", f"${round(float(result['High']), 2)}",
+                col3.metric("High", f"${round(result['High'], 2)}",
                             delta=f"{round(high_change_pct, 2)}%")
-                col4.metric("Close", f"${round(float(result['Close']), 2)}",
+                col4.metric("Close", f"${round(result['Close'], 2)}",
                             delta=f"{round(close_change_pct, 2)}%")
                 col5.metric("Volume", f"{int(result['Volume']):,}")
                 
-                # Show note if the date shown is different from the requested date
-                if result["Date"].date() != date:
-                    st.info(f"Note: Data shown is for {result['Date'].strftime('%A, %B %d, %Y')} (nearest trading day)")
+                # Check if result["Date"] is a scalar or has a date() method
+                
             else:
                 raise ValueError("Previous day data not available")
                 
         except:
-            # Simple metrics without comparison if no prev day
             col1, col2, col3, col4, col5 = st.columns(5)
-            col1.metric("Open", f"${round(float(result['Open']), 2)}")
-            col2.metric("Low", f"${round(float(result['Low']), 2)}")
-            col3.metric("High", f"${round(float(result['High']), 2)}")
-            col4.metric("Close", f"${round(float(result['Close']), 2)}")
+            col1.metric("Open", f"${round(result['Open'], 2)}")
+            col2.metric("Low", f"${round(result['Low'], 2)}")
+            col3.metric("High", f"${round(result['High'], 2)}")
+            col4.metric("Close", f"${round(result['Close'], 2)}")
             col5.metric("Volume", f"{int(result['Volume']):,}")
             
             st.info("Note: Previous day comparison not available")
         
-        #Net Gain/Loss
         if result["Open"] > 0:
-            daily_change = float(result["Close"]) - float(result["Open"])
-            daily_change_pct = (daily_change / float(result["Open"])) * 100
+            daily_change = result["Close"] - result["Open"]
+            daily_change_pct = (daily_change / result["Open"]) * 100
             
             if daily_change > 0:
                 st.markdown(f"<div class='success-box'>📈 Day's change: +${round(daily_change, 2)} ({round(daily_change_pct, 2)}%)</div>", unsafe_allow_html=True)
