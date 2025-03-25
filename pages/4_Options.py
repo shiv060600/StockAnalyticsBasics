@@ -67,7 +67,7 @@ T = (expiry_date - today).days / 365.0
 
 
 def plot_option_payoff_price(S, K, r, sigma, T, option_type):
-    price_range = np.linspace(0.5 * S, 1.5 * S, 100)
+    price_range = np.linspace(0.5 * S, 1.5 * S, 20)
     payoffs = []
 
     if option_type == "Call":
@@ -106,10 +106,13 @@ def plot_option_payoff_price(S, K, r, sigma, T, option_type):
         line=dict(color='red', width=2)
     ))
     
-    fig.add_shape(
-        type="line", line=dict(dash="dash", color="gray"),
-        x0=K, y0=0, x1=K, y1=max(payoffs)
+    fig.add_vline(
+        x=K,line_color = 'white',line_width = 2,line_dash = "dash"
     )
+
+    fig.add_hline(
+        y=0, line_color="grey", line_width=2 , line_dash =  "dash"
+        )
     
     fig.update_layout(
         title=f"{option_type} Option Analysis",
@@ -121,10 +124,15 @@ def plot_option_payoff_price(S, K, r, sigma, T, option_type):
     
     return fig
 
+if option_type == "Put":
+    K = st.sidebar.number_input("Underlying Asset Price", value=120.0)
+else:
+    K = st.sidebar.number_input("Underlying Asset Price", value=90.0)
 
-K = st.sidebar.number_input("Strike Price", value=100.0)
+S = st.sidebar.number_input("Strike Price", value=100.0)
+
 sigma = st.sidebar.slider("Volatility", min_value = 0.0, max_value = 1.0, step= 0.05, value=0.2)
-S = st.sidebar.number_input("Underlying Asset Price", value=100.0)
+
 r = st.sidebar.slider("Interest Rate", min_value = 0.01, max_value= 0.1, step=0.01, value=0.05)
 
 if S > 0 and K > 0 and T > 0:
