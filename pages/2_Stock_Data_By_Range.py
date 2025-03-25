@@ -9,6 +9,7 @@ import streamlit.components.v1 as components
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import os 
+import datetime 
 load_dotenv()
 CLOUD_DB = os.getenv("DB_KEY")
 st.set_page_config(page_title="Stock Data By Range", layout="wide")
@@ -63,8 +64,12 @@ col1, col2 = st.columns([1, 2])
 with col1:
     ticker = st.text_input("Enter a ticker:", "AAPL")
 
+today = datetime.datetime.now().date()
+
+yr_before = today - datetime.timedelta(days=365)
+
 with col2:
-    date_range = date_range_picker("Choose a date range:", None, None)
+    date_range = date_range_picker("Choose a date range:", yr_before, today)
     start_date = date_range[0].strftime("%Y-%m-%d")
     end_date = date_range[1].strftime("%Y-%m-%d")
 
