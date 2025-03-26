@@ -8,11 +8,3 @@ def get_call_price(S,K,sigma,T,r):
     C = S * norm.cdf(d1) - PVK * norm.cdf(d2)
     return C
 
-if __name__ == "__main__":
-    S = 100
-    K = 100
-    simga = 0.2 
-    T = 1
-    r = 0.05
-    res = get_call_price(S,K,simga,T,r)
-    print(res)

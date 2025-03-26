@@ -78,19 +78,10 @@ def plot_option_payoff_price(S, K, r, sigma, T, option_type):
     for price in price_range:
         # Calculate option payoff at expiration
         if option_type == "Call":
-            if price >= K:
-                payoff = max(price - K, 0)
-                # Calculate profit: payoff minus premium paid
-            else:
-                payoff = -1 * initial_premium
-
+            payoff = (max(price - K,0) - initial_premium)
         else:
-            if price >= K:
-                payoff = -1 * initial_premium
-            else:
-                payoff = max(K - price, 0)
-                # Calculate profit: payoff minus premium paid
-                profit = payoff - initial_premium
+            payoff = (max(K - price, 0) - initial_premium)
+                
             
         payoffs.append(payoff)
     
@@ -107,7 +98,7 @@ def plot_option_payoff_price(S, K, r, sigma, T, option_type):
     ))
     
     fig.add_vline(
-        x=K,line_color = 'white',line_width = 2,line_dash = "dash"
+        x = K,line_color = 'white',line_width = 2,line_dash = "dash"
     )
 
     fig.add_hline(
@@ -125,11 +116,11 @@ def plot_option_payoff_price(S, K, r, sigma, T, option_type):
     return fig
 
 if option_type == "Put":
-    K = st.sidebar.number_input("Underlying Asset Price", value=120.0)
+    S = st.sidebar.number_input("Underlying Asset Price", value=90.0)
 else:
-    K = st.sidebar.number_input("Underlying Asset Price", value=90.0)
+    S = st.sidebar.number_input("Underlying Asset Price", value=120.0)
 
-S = st.sidebar.number_input("Strike Price", value=100.0)
+K = st.sidebar.number_input("Strike Price", value=100.0)
 
 sigma = st.sidebar.slider("Volatility", min_value = 0.0, max_value = 1.0, step= 0.05, value=0.2)
 
