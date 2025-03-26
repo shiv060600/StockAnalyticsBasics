@@ -5,7 +5,7 @@ from datetime import datetime
 import pandas as pd
 
 load_dotenv()
-ALPHA_ADVANTAGE_API_KEY = "47BHK4Z0KQ5ZPZJH"
+ALPHA_ADVANTAGE_API_KEY = os.getenv("ALPHA_ADVANTAGE_API_KEY")
 def get_news_data(stock_Symbol):
 
     try:

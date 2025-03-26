@@ -75,6 +75,7 @@ with st.spinner("Loading stock data..."):
                 low_change_pct = ((stock_row["Low"] - prev_day["Low"]) / prev_day["Low"]) * 100
                 high_change_pct = ((stock_row["High"] - prev_day["High"]) / prev_day["High"]) * 100
                 close_change_pct = ((stock_row["Close"] - prev_day["Close"]) / prev_day["Close"]) * 100
+                volume_change_pct = ((stock_row["Volume"] - prev_day["Volume"]) / prev_day["Volume"]) * 100
                 
                 col1, col2, col3, col4, col5 = st.columns(5)
                 col1.metric("Open", f"${round(stock_row['Open'], 2)}",
@@ -85,7 +86,8 @@ with st.spinner("Loading stock data..."):
                             delta=f"{round(high_change_pct, 2)}%")
                 col4.metric("Close", f"${round(stock_row['Close'], 2)}",
                             delta=f"{round(close_change_pct, 2)}%")
-                col5.metric("Volume", f"{int(stock_row['Volume']):,}")
+                col5.metric("Volume", f"{int(stock_row['Volume']):,}",
+                            delta=f"{round(volume_change_pct, 2)}%")
             else:
                 raise ValueError("Previous day data not available")
         except:
@@ -154,3 +156,4 @@ with st.spinner("Loading stock data..."):
                 st.markdown(f"<div class='success-box'>📈 Day's change: +${round(daily_change, 2)} ({round(daily_change_pct, 2)}%)</div>", unsafe_allow_html=True)
             else:
                 st.markdown(f"<div class='error-box'>📉 Day's change: ${round(daily_change, 2)} ({round(daily_change_pct, 2)}%)</div>", unsafe_allow_html=True)
+    st.write("**Deltas under open low high close volume are pct change from prev day")

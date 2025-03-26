@@ -8,3 +8,5 @@ plotly
 sqlitecloud
 mpld3
 scipy
+os
+dotenv

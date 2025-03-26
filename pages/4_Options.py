@@ -14,7 +14,7 @@ st.sidebar.header("Options Parameters")
 option_type = st.sidebar.radio("Option Type", ["Call", "Put"])
 
 today = datetime.datetime.now().date()
-expiry_date = st.sidebar.date_input("Expiration Date", (datetime.datetime.now().date()+datetime.timedelta(days = 1)))
+expiry_date = st.sidebar.date_input("Expiration Date", (datetime.datetime.now().date()+datetime.timedelta(days = 30)))
 
 @st.cache_data
 def get_current_price_data(ticker):
@@ -116,9 +116,9 @@ def plot_option_payoff_price(S, K, r, sigma, T, option_type):
     return fig
 
 if option_type == "Put":
-    S = st.sidebar.number_input("Underlying Asset Price", value=90.0)
+    S = st.sidebar.number_input("Underlying Asset Price", value=85.0)
 else:
-    S = st.sidebar.number_input("Underlying Asset Price", value=120.0)
+    S = st.sidebar.number_input("Underlying Asset Price", value=130.0)
 
 K = st.sidebar.number_input("Strike Price", value=100.0)
 
