@@ -15,7 +15,7 @@ def get_news_df(tickerSymbol):
 news_df = get_news_df(ticker)
 
 if news_df.empty:
-    st.write("No news coming through API. I blame Yahoo!")
+    st.write("No news coming through API. Probably API ran out of calls.")
 
 else:
     num_rows = news_df.shape[0]
