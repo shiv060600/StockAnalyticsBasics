@@ -17,6 +17,7 @@ def get_news_data(stock_Symbol):
         news_list = []
         url = f"https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={stock_Symbol}&apikey={ALPHA_ADVANTAGE_API_KEY}"
         response = (requests.get(url)).json()
+        print(response)
         feed_data = response["feed"]
         for article in feed_data:
             for ticker_sentiment in article["ticker_sentiment"]:
