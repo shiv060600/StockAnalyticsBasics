@@ -8,7 +8,7 @@ st.title("Stock News")
 st.write("Daily stock news, articles over 70% relevancy are included.")
 ticker = st.text_input("Enter Stock Ticker: ", "AAPL")
 
-@st.cache_data
+@st.cache_data(ttl=3600)
 def get_news_df(tickerSymbol):
     return get_news_data(tickerSymbol)
 
