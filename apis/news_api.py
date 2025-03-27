@@ -3,11 +3,16 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime
 import pandas as pd
+import streamlit as st
 
-load_dotenv()
-ALPHA_ADVANTAGE_API_KEY = os.getenv("ALPHA_ADVANTAGE_API_KEY")
+try:
+    ALPHA_ADVANTAGE_API_KEY = st.secrets["ALPHA_ADVANTAGE_API_KEY"]
+except Exception:
+    # Fall back to environment variables if not in streamlit environment
+    from dotenv import load_dotenv
+    load_dotenv()
+    ALPHA_ADVANTAGE_API_KEY = os.getenv("ALPHA_ADVANTAGE_API_KEY")
 def get_news_data(stock_Symbol):
-
     try:
         news_list = []
         url = f"https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={stock_Symbol}&apikey={ALPHA_ADVANTAGE_API_KEY}"
@@ -34,8 +39,8 @@ def get_news_data(stock_Symbol):
                             "url" : url
                         }
                     )
-            news_df = pd.DataFrame(news_list)
-    except Exception  as e:
+        news_df = pd.DataFrame(news_list)
+    except Exception as e:
         news_df = pd.DataFrame()
+        print(f"Error fetching news: {e}")  
     return news_df
-
