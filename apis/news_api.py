@@ -6,13 +6,10 @@ import pandas as pd
 import streamlit as st
 
 
-st.cache_data(ttl=3600)
+@st.cache_data(ttl=3600)
 def get_news_data(stock_Symbol):
     try:
         api_key = st.secrets["ALPHA_ADVANTAGE_API_KEY"]
-        # Show partial key for debugging (only in development)
-        if 'STREAMLIT_SHARING' not in os.environ and 'STREAMLIT_CLOUD' not in os.environ:
-            st.sidebar.write(f"Using API key: {api_key[:4]}{'*' * (len(api_key) - 4)}")
     except Exception as e:
         try:
             # Fall back to environment variables
@@ -46,7 +43,7 @@ def get_news_data(stock_Symbol):
                             "title" : title,
                             "ticker" : stock_Symbol,
                             "sentiment_score" : ticker_sentiment_score,
-                            "date_published" : date_published.date,
+                            "date_published" : date_published.date(),
                             "summary" : summary,
                             "banner_image" : banner_image,
                             "url" : url
