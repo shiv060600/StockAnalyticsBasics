@@ -83,6 +83,9 @@ with st.spinner(f"Loading data for {ticker}..."):
     #conn = sqlitecloud.connect(DATABASE_NAME)
     #cursor = conn.cursor()
 
+    """
+    Get stock data an perform extra calculations.
+    """
     try:
         #cursor.execute("SELECT * FROM StockPrices WHERE date BETWEEN ? AND ? AND ticker = ?", (start_date, end_date, ticker))
         #data = cursor.fetchall()
@@ -139,25 +142,45 @@ with st.spinner(f"Loading data for {ticker}..."):
                 
         st.markdown("</div>", unsafe_allow_html=True)
 
+
+        #Create the chart
         st.markdown("<div class='plotly-chart'>", unsafe_allow_html=True)
+
+        candles_toggle = st.toggle(label = 'Enable Canldes',value = True )
 
         fig = go.Figure()
 
+        # add price line with no hover template
         fig.add_trace(
             go.Scatter(
                 x=stock_df.index,
                 y=stock_df['close'],
                 mode='lines',
                 name='Price',
-                line=dict(color='#1E88E5', width=2),
-                hovertemplate='Date: %{x}<br>Price: $%{y:.2f}<extra></extra>'
+                line=dict(color="#C0C7CE", width=2),
             )
         )
+
+        if candles_toggle:
+            fig.add_trace(
+                go.Candlestick(
+                    x = stock_df.index,
+                    open = stock_df['open'],
+                    high = stock_df['high'],
+                    low  = stock_df['low'],
+                    close = stock_df['close'],
+                    name = 'candlestick',
+                    increasing=dict(line=dict(color='#26A69A'), fillcolor="#26A69A"),  # CC = ~80% opacity
+                    decreasing=dict(line=dict(color='#EF5350'), fillcolor="#EF5350"),  # CC = ~80% opacity
+                    opacity = 0.8,
+                )
+            )
 
 
         fig.update_layout(
             title=f'{ticker} Stock Price ({start_date} to {end_date})',
-            height=500,
+            height=600,
+            width = None,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
             margin=dict(l=40, r=40, b=40, t=80),
             hovermode="x unified",
@@ -167,7 +190,9 @@ with st.spinner(f"Loading data for {ticker}..."):
             yaxis=dict(
                 showgrid=True,
                 gridcolor='rgba(230, 230, 230, 0.8)'
-            )
+            ),
+            dragmode = 'zoom',
+            selectdirection = 'h'
         )
 
         fig.update_xaxes(
@@ -185,15 +210,19 @@ with st.spinner(f"Loading data for {ticker}..."):
                 x=0.01,
                 y=1.01,
             ),
-            rangeslider=dict(visible=True, thickness=0.05),
+            rangeslider=dict(visible=False, thickness=0.05),
             type="date"
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, config={
+            'scrollZoom': True,           
+            'displayModeBar': True,       
+            'modeBarButtonsToAdd': ['select2d', 'lasso2d'],
+            'modeBarButtonsToRemove': ['autoScale2d'],  
+        })
 
         
-        
-        
+    
         show_daily = st.checkbox("Show Daily Changes", value=True)
             
         

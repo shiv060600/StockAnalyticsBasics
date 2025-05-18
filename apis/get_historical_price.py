@@ -52,3 +52,9 @@ def get_historical_price(ticker, date):
             "Open": 0.0,
             "Volume": 0
         }
+
+if __name__ == "__main__":
+    print_df = get_historical_price("AAPL","2025-02-02")
+    print()
+    
+
