@@ -4,10 +4,10 @@ import os
 from datetime import datetime
 from dotenv import load_dotenv
 import sqlitecloud
-load_dotenv
+load_dotenv()
 DB_KEY = os.getenv("DB_KEY")
 DATABASE_NAME = "stock_data.db"
-
+#legacy
 def create_tables_if_not_exist(db_name):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()

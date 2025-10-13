@@ -4,7 +4,6 @@ import datetime
 def get_stock_data_range(ticker, start, end):
     try:
         res = yf.download(ticker, start=start, end=end, progress=True)
-        print(res)
         res.reset_index(inplace= True)
         res.columns = ['date','open', 'high', 'low', 'close', 'volume']
         res.set_index("date", inplace= True)

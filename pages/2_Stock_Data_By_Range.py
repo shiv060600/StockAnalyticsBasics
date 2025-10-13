@@ -8,14 +8,19 @@ from apis.get_stock_data_range import get_stock_data_range
 import streamlit.components.v1 as components
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import os 
+import os,sys
 import datetime 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.dynamo_db import DynamoDB
 load_dotenv()
 CLOUD_DB = os.getenv("DB_KEY")
 st.set_page_config(page_title="Stock Data By Range", layout="wide")
 
 #DATABASE_NAME = "stock_data.db"
 DATABASE_NAME = CLOUD_DB
+
+
+dynamo_client = DynamoDB()
 
 
 st.markdown("""
@@ -70,14 +75,15 @@ yr_before = today - datetime.timedelta(days=365)
 
 with col2:
     date_range = date_range_picker("Choose a date range:", yr_before, today)
-    start_date = date_range[0].strftime("%Y-%m-%d")
-    end_date = date_range[1].strftime("%Y-%m-%d")
+    start_date = date_range[0]
+    end_date = date_range[1]
 
 st.markdown("---")
 
 @st.cache_data(ttl=3600)
 def get_stock_data(stockTicker, start, end):
-    return get_stock_data_range(stockTicker, start, end)
+    data = dynamo_client.get_data(start,end,stockTicker)
+    return data
 
 with st.spinner(f"Loading data for {ticker}..."):
     #conn = sqlitecloud.connect(DATABASE_NAME)

@@ -9,3 +9,5 @@ sqlitecloud
 mpld3
 scipy
 dotenv
+boto3
+mypy-boto3-dynamodb
