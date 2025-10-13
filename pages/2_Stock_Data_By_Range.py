@@ -82,7 +82,7 @@ st.markdown("---")
 
 @st.cache_data(ttl=3600)
 def get_stock_data(stockTicker, start, end):
-    data = dynamo_client.get_data(start,end,stockTicker)
+    data = get_stock_data_range(ticker,start,end)
     return data
 
 with st.spinner(f"Loading data for {ticker}..."):

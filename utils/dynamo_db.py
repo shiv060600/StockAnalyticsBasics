@@ -13,6 +13,7 @@ load_dotenv()
 
 
 class DynamoDB:
+
     def __init__(self):
         self.AWS_PUBLIC_KEY = os.getenv("AWS_PUBLIC_KEY")
         self.AWS_PRIVATE_KEY = os.getenv("AWS_PRIVATE_KEY")
@@ -20,7 +21,7 @@ class DynamoDB:
         self.dynamo_db_client: DynamoDBServiceResource = boto3.resource('dynamodb',region_name = self.AWS_DEFAULT_REGION,
                                             aws_secret_access_key = self.AWS_PRIVATE_KEY, aws_access_key_id = self.AWS_PUBLIC_KEY )
         self.table: Table = self.dynamo_db_client.Table('stock_prices')
-
+        
     def get_data(self,start_date:datetime.datetime,end_date: datetime.datetime, ticker:str) -> pd.DataFrame:
 
         try:
@@ -28,7 +29,7 @@ class DynamoDB:
                 KeyConditionExpression =  Key('ticker').eq(ticker) & Key('date').between(start_date.strftime("%Y-%m-%d"),end_date.strftime("%Y-%m-%d"))
             )
         except BotoCoreError as bte:
-            print(f"AWS connection error {e}")
+            print(f"AWS connection error {bte}")
         except Exception as e:
             print(f"unexpected error occured {e}")
 
@@ -41,7 +42,7 @@ class DynamoDB:
             data_fetch = get_stock_data_range(ticker,start_date,end_date)
             for idx,row in data_fetch.iterrows():
                 try:
-                    self.table.put_item(Item = {
+                    insert = {
                         "ticker": ticker,
                         "date": idx.strftime("%Y-%m-%d"),  # idx is the date
                         "open": Decimal(str(row['open'])),
@@ -49,7 +50,8 @@ class DynamoDB:
                         "low": Decimal(str(row['low'])),
                         "close": Decimal(str(row['close'])),
                         "volume": int(row['volume'])
-                    })
+                    }
+                    self._insert_item(item_to_insert = insert)
                 except Exception as e:
                     print(f"failed to enter into dynamo{e}")
 
@@ -74,7 +76,7 @@ class DynamoDB:
 
                 for idx,row in new_items.iterrows():
                     try:
-                        self.table.put_item(Item = {
+                        insert =  {
                             "ticker": ticker,
                             "date": idx.strftime("%Y-%m-%d"),
                             "open": Decimal(str(row['open'])),
@@ -82,13 +84,20 @@ class DynamoDB:
                             "low": Decimal(str(row['low'])),
                             "close": Decimal(str(row['close'])),
                             "volume": int(row['volume'])
-                        })
+                        }
+                        self._insert_item(item_to_insert = insert)
 
                     except Exception as e:
                         print(f"failed to enter into dynamo{e}")
             
             return_df = pd.concat([data,new_items])
             return return_df
+        
+    def _insert_item(self,item_to_insert):
+        try:
+            self.table.put_item(Item = item_to_insert)
+        except Exception as e:
+            print(f"failed to insert item {e}")
 
 
         
