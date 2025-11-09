@@ -1,0 +1,20 @@
+[project]
+name = "stock-analytics-project"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "requests",
+    "pandas",
+    "python-dotenv",
+    "matplotlib",
+    "streamlit_extras",
+    "yfinance",
+    "plotly",
+    "sqlitecloud",
+    "mpld3",
+    "scipy",
+    "boto3",
+    "mypy-boto3-dynamodb",
+]
