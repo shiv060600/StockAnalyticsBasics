@@ -93,7 +93,7 @@ class DynamoDB:
             return_df = pd.concat([data,new_items])
             return return_df
         
-    def _insert_item(self,item_to_insert):
+    def _insert_item(self,item_to_insert:dict):
         try:
             self.table.put_item(Item = item_to_insert)
         except Exception as e:
